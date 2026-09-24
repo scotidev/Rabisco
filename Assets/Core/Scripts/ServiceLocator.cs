@@ -5,14 +5,15 @@ using UnityEngine;
 namespace Rabisco.Core
 {
     /// <summary>
-    /// Global static service locator. The only global class in the project. Access is centralized here.
-    /// Every manager registers its interface here on Awake and unregisters on OnDestroy.
+    /// Static service locator. The only global access point for all services.
+    /// Every manager registers itself here on creation (via Bootstraper).
+    /// Access: ServiceLocator.Get<IGameStateService>();
     /// </summary>
     public static class ServiceLocator
     {
         #region STATIC
 
-        private static readonly Dictionary<Type, object> s_Services = new();
+        private static readonly Dictionary<Type, IGameService> s_Services = new();
 
         #endregion
 
@@ -21,17 +22,17 @@ namespace Rabisco.Core
 
         /// <summary>
         /// Registers a service instance by its interface type.
-        /// Call this in the manager's Awake().
+        /// Duplicate registrations are logged as warnings and the old instance is overwritten.
         /// </summary>
-        /// <typeparam name="T">The interface type (e.g., IAudioService).</typeparam>
-        /// <param name="service">The manager instance implementing the interface.</param>
-        public static void Register<T>(T service)
+        /// <typeparam name="T">The interface type (e.g., IGameStateService).</typeparam>
+        /// <param name="service">The service instance to register.</param>
+        public static void Register<T>(T service) where T : IGameService
         {
             Type type = typeof(T);
 
             if (s_Services.ContainsKey(type))
             {
-                Debug.LogWarning($"[ServiceLocator] Duplicate registration: {type.Name}.");
+                Debug.LogWarning($"[ServiceLocator] Duplicate registration: {type.Name}. Old instance will be overwritten.");
             }
 
             s_Services[type] = service;
@@ -43,42 +44,34 @@ namespace Rabisco.Core
         /// </summary>
         /// <typeparam name="T">The interface type to look up.</typeparam>
         /// <returns>The registered service instance, or null.</returns>
-        public static T Get<T>()
+        public static T Get<T>() where T : IGameService
         {
             Type type = typeof(T);
 
-            if (s_Services.TryGetValue(type, out object service))
+            if (s_Services.TryGetValue(type, out IGameService service))
             {
                 return (T)service;
             }
 
-            Debug.LogError($"[ServiceLocator] Service not found: {type.Name}. Did you forget to register it in Bootstrap?");
-
+            Debug.LogError($"[ServiceLocator] Service not found: {type.Name}. Did you forget to register it in Bootstraper?");
             return default;
         }
 
         /// <summary>
         /// Unregisters a service by its interface type.
-        /// Call this in the manager's OnDestroy().
         /// </summary>
         /// <typeparam name="T">The interface type to unregister.</typeparam>
-        public static void Unregister<T>()
+        public static void Unregister<T>() where T : IGameService
         {
-            Type type = typeof(T);
-
-            if (s_Services.Remove(type))
-            {
-                Debug.Log($"[ServiceLocator] Unregistered: {type.Name}");
-            }
+            s_Services.Remove(typeof(T));
         }
 
         /// <summary>
-        /// Removes all registered services. Used when returning to Bootstrap scene.
+        /// Removes all registered services. Used when returning to a clean state.
         /// </summary>
         public static void Clear()
         {
             s_Services.Clear();
-
             Debug.Log("[ServiceLocator] All services cleared.");
         }
 
