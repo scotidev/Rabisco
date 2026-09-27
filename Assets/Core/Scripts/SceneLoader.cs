@@ -15,8 +15,9 @@ namespace Rabisco.Core
     {
         #region FIELDS
 
-        private const string c_FadeCanvasName = "-- FADE --";
-        private const float c_FadeDuration = 0.5f;
+        private const string c_FadeCanvasName = "-- FadeCanvas --";
+        private const float c_FadeOutDuration = 1.5f;
+        private const float c_FadeInDuration = 1f;
 
         private MonoBehaviour m_CoroutineRunner;
         private Canvas m_FadeCanvas;
@@ -28,16 +29,17 @@ namespace Rabisco.Core
         #region UNITY CALLBACKS
 
         /// <summary>
-        /// Called when the SceneLoader is created by Bootstraper.
-        /// Sets up the internal coroutine runner.
-        /// Create a hidden GameObject with a MonoBehaviour to run coroutines
+        /// Lazy-init: creates the hidden GameObject with a MonoBehaviour to run coroutines.
+        /// Called on first LoadScene so the manager works without explicit initialization.
         /// </summary>
-        private void Initialize()
+        private void EnsureRuntime()
         {
+            if (m_CoroutineRunner != null) return;
+
             GameObject runnerObject = new GameObject("SceneLoader_Runtime");
             m_CoroutineRunner = runnerObject.AddComponent<CoroutineRunner>();
             UnityEngine.Object.DontDestroyOnLoad(runnerObject);
-            Debug.Log("[SceneLoader] Initialized.");
+            Debug.Log("[SceneLoader] Runtime created.");
         }
 
         #endregion
@@ -57,6 +59,7 @@ namespace Rabisco.Core
                 return;
             }
 
+            EnsureRuntime();
             m_CoroutineRunner.StartCoroutine(LoadSceneAsync(sceneName));
         }
 
@@ -72,7 +75,7 @@ namespace Rabisco.Core
         {
             EnsureFadeOverlay();
 
-            yield return Fade(1f);
+            yield return Fade(1f, c_FadeOutDuration);
 
             AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
             asyncLoad.allowSceneActivation = false;
@@ -91,7 +94,7 @@ namespace Rabisco.Core
             yield return null;
 
             // Fade in (transparent)
-            yield return Fade(0f);
+            yield return Fade(0f, c_FadeInDuration);
 
             Debug.Log($"[SceneLoader] Loaded scene: {sceneName}");
         }
@@ -135,16 +138,16 @@ namespace Rabisco.Core
         /// <summary>
         /// Fades the overlay to the target alpha (0 = transparent, 1 = black).
         /// </summary>
-        private IEnumerator Fade(float targetAlpha)
+        private IEnumerator Fade(float targetAlpha, float duration)
         {
             Color color = m_FadeImage.color;
             float startAlpha = color.a;
             float elapsed = 0f;
 
-            while (elapsed < c_FadeDuration)
+            while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
-                float t = elapsed / c_FadeDuration;
+                float t = elapsed / duration;
                 color.a = Mathf.Lerp(startAlpha, targetAlpha, t);
                 m_FadeImage.color = color;
                 yield return null;
