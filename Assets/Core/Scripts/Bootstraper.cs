@@ -9,6 +9,8 @@ namespace Rabisco.Core
     /// </summary>
     public static class Bootstraper
     {
+        private static bool s_Initialized = false;
+
         #region INITIALIZATION
 
         /// <summary>
@@ -19,6 +21,9 @@ namespace Rabisco.Core
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Initialize()
         {
+            if (s_Initialized) return;
+            s_Initialized = true;
+
             // --- Create and register services ---
             // Each manager is created with 'new' and registered via ServiceLocator.Register<T>().
             // Placeholders for now — uncomment as each manager is implemented.
@@ -62,10 +67,6 @@ namespace Rabisco.Core
             // ServiceLocator.Register<IObjectPoolService>(objectPool);
 
             Debug.Log("[Bootstraper] All services registered.");
-
-            // --- Load next scene ---
-            // Once SceneLoader exists (Script #4), uncomment:
-            // ServiceLocator.Get<ISceneLoader>().LoadScene("01_MainMenu");
         }
 
         #endregion
