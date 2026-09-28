@@ -1,4 +1,5 @@
 using UnityEngine;
+using Rabisco.Core.SaveSystem;
 
 namespace Rabisco.Core
 {
@@ -34,9 +35,8 @@ namespace Rabisco.Core
             var sceneLoader = new SceneLoader();
             ServiceLocator.Register<ISceneLoader>(sceneLoader);
 
-            // --- Save System (Script #5) ---
-            // var saveManager = new SaveManager();
-            // ServiceLocator.Register<ISaveService>(saveManager);
+            var saveManager = new SaveManager();
+            ServiceLocator.Register<ISaveService>(saveManager);
 
             // --- Input System (Script #6) ---
             // var inputManager = new InputManager();
