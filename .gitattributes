@@ -21,6 +21,20 @@
 *.hlsl                  text linguist-language=hlsl
 *.raytrace              text linguist-language=hlsl
 *.shader                text
+*.cginc                 text linguist-vendored
+*.compute               text linguist-language=hlsl linguist-vendored
+*.cs                    text diff=csharp
+*.hlsl                  text linguist-language=hlsl linguist-vendored
+*.raytrace              text linguist-language=hlsl linguist-vendored
+*.shader                text linguist-vendored
+
+# Unity JSON files
+*.asmdef                unity-json
+*.asmref                unity-json
+*.index                 unity-json
+*.inputactions          unity-json
+*.shadergraph           unity-json linguist-vendored
+*.shadersubgraph        unity-json linguist-vendored
 
 # Unity JSON files
 *.asmdef                unity-json
@@ -69,6 +83,7 @@
 # Exclude from GitHub stats and diffs: third-party plugins, packages lock file
 Assets/Plugins/**           linguist-generated
 Packages/packages-lock.json linguist-generated
+Packages/**             linguist-vendored
 
 # Unity LFS
 *.cubemap               lfs
