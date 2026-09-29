@@ -1,4 +1,5 @@
 using UnityEngine;
+using Rabisco.Core.InputSystem;
 using Rabisco.Core.SaveSystem;
 
 namespace Rabisco.Core
@@ -38,9 +39,8 @@ namespace Rabisco.Core
             var saveManager = new SaveManager();
             ServiceLocator.Register<ISaveService>(saveManager);
 
-            // --- Input System (Script #6) ---
-            // var inputManager = new InputManager();
-            // ServiceLocator.Register<IInputService>(inputManager);
+            var inputManager = new InputManager();
+            ServiceLocator.Register<IInputService>(inputManager);
 
             // --- Audio System (Script #7) ---
             // var audioManager = new AudioManager();
